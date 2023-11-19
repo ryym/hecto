@@ -5,7 +5,7 @@ pub(crate) struct Editor {}
 
 impl Editor {
     pub fn default() -> Self {
-        Editor {}
+        Self {}
     }
 
     pub fn run(&self) {
@@ -16,13 +16,13 @@ impl Editor {
                 Ok(key) => match key {
                     Key::Char(c) => {
                         if c.is_control() {
-                            println!("{:?}\r", c as u8)
+                            println!("{:?}\r", c as u8);
                         } else {
-                            println!("{:?} ({})\r", c as u8, c)
+                            println!("{:?} ({})\r", c as u8, c);
                         }
                     }
                     Key::Ctrl('q') => break,
-                    _ => println!("{:?}\r", key),
+                    _ => println!("{key:?}\r"),
                 },
                 Err(e) => panic!("{}", e),
             }
