@@ -1,29 +1,23 @@
-use std::io::{self, Read, Write};
-use termion::raw::IntoRawMode;
+use std::io;
+use termion::{event::Key, input::TermRead, raw::IntoRawMode};
 
 fn main() {
-    let mut stdout = io::stdout().into_raw_mode().unwrap();
+    let _stdout = io::stdout().into_raw_mode().unwrap();
 
-    for b in io::stdin().bytes() {
-        match b {
-            Ok(b) => {
-                let c = b as char;
-                if c.is_control() {
-                    println!("{:?} {:#b} \r", b, b)
-                } else {
-                    println!("{:?} {:#b} ({})\r", b, b, c)
+    for key in io::stdin().keys() {
+        match key {
+            Ok(key) => match key {
+                Key::Char(c) => {
+                    if c.is_control() {
+                        println!("{:?}\r", c as u8)
+                    } else {
+                        println!("{:?} ({})\r", c as u8, c)
+                    }
                 }
-                stdout.flush().unwrap();
-                if b == to_ctrl_byte('q') {
-                    break;
-                }
-            }
+                Key::Ctrl('q') => break,
+                _ => println!("{:?}\r", key),
+            },
             Err(e) => panic!("{}", e),
         }
     }
-}
-
-fn to_ctrl_byte(c: char) -> u8 {
-    let byte = c as u8;
-    byte & 0b001_1111
 }
