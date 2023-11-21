@@ -15,19 +15,19 @@ impl Editor {
 
         loop {
             if let Err(err) = self.refresh_screen() {
-                panic!("{}", err);
+                die(&err);
             }
             if self.should_quit {
                 break;
             }
             if let Err(err) = self.process_keypress() {
-                panic!("{}", err);
+                die(&err);
             }
         }
     }
 
     fn refresh_screen(&self) -> Result<(), io::Error> {
-        print!("{}", termion::clear::All);
+        print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
         io::stdout().flush()
     }
 
@@ -39,6 +39,11 @@ impl Editor {
         }
         Ok(())
     }
+}
+
+fn die(err: &io::Error) {
+    print!("{}", termion::clear::All);
+    panic!("{}", err);
 }
 
 fn read_key() -> Result<Key, io::Error> {
