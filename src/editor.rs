@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Write};
 use termion::{event::Key, input::TermRead, raw::IntoRawMode};
 
 pub(crate) struct Editor {
@@ -14,13 +14,21 @@ impl Editor {
         let _stdout = io::stdout().into_raw_mode().unwrap();
 
         loop {
-            if let Err(err) = self.process_keypress() {
+            if let Err(err) = self.refresh_screen() {
                 panic!("{}", err);
             }
             if self.should_quit {
                 break;
             }
+            if let Err(err) = self.process_keypress() {
+                panic!("{}", err);
+            }
         }
+    }
+
+    fn refresh_screen(&self) -> Result<(), io::Error> {
+        print!("{}", termion::clear::All);
+        io::stdout().flush()
     }
 
     fn process_keypress(&mut self) -> Result<(), io::Error> {
