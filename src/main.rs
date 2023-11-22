@@ -3,6 +3,11 @@
 mod editor;
 mod terminal;
 
+pub struct Position {
+    x: usize,
+    y: usize,
+}
+
 use crate::editor::Editor;
 
 fn main() {

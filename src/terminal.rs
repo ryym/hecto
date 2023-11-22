@@ -1,3 +1,4 @@
+use crate::Position;
 use std::io::{self, Stdout, Write};
 use termion::{
     event::Key,
@@ -48,10 +49,10 @@ impl Terminal {
         print!("{}", termion::cursor::Show);
     }
 
-    pub fn cursor_position(x: u16, y: u16) {
+    pub fn cursor_position(pos: &Position) {
         // The cursor position in the terminal is 1-based.
-        let x = x.saturating_add(1);
-        let y = y.saturating_add(1);
+        let x = pos.x.saturating_add(1) as u16;
+        let y = pos.y.saturating_add(1) as u16;
         print!("{}", termion::cursor::Goto(x, y));
     }
 
