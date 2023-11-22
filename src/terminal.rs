@@ -36,6 +36,14 @@ impl Terminal {
         print!("{}", termion::clear::All);
     }
 
+    pub fn cursor_hide() {
+        print!("{}", termion::cursor::Hide);
+    }
+
+    pub fn cursor_show() {
+        print!("{}", termion::cursor::Show);
+    }
+
     pub fn cursor_position(x: u16, y: u16) {
         // The cursor position in the terminal is 1-based.
         let x = x.saturating_add(1);
