@@ -1,7 +1,6 @@
-use std::io::{self, Write};
-use termion::{event::Key, input::TermRead, raw::IntoRawMode};
-
 use crate::terminal::Terminal;
+use std::io;
+use termion::{event::Key, raw::IntoRawMode};
 
 pub(crate) struct Editor {
     should_quit: bool,
@@ -34,14 +33,15 @@ impl Editor {
     }
 
     fn refresh_screen(&self) -> Result<(), io::Error> {
-        print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
+        Terminal::clear_screen();
+        Terminal::cursor_position(0, 0);
         if self.should_quit {
             println!("Goodbye.\r");
         } else {
             self.draw_rows();
-            print!("{}", termion::cursor::Goto(1, 1));
+            Terminal::cursor_position(0, 0);
         }
-        io::stdout().flush()
+        Terminal::flush()
     }
 
     fn draw_rows(&self) {
@@ -51,7 +51,7 @@ impl Editor {
     }
 
     fn process_keypress(&mut self) -> Result<(), io::Error> {
-        let pressed_key = read_key()?;
+        let pressed_key = Terminal::read_key()?;
         match pressed_key {
             Key::Ctrl('q') => self.should_quit = true,
             _ => {}
@@ -61,14 +61,6 @@ impl Editor {
 }
 
 fn die(err: &io::Error) {
-    print!("{}", termion::clear::All);
+    Terminal::clear_screen();
     panic!("{}", err);
-}
-
-fn read_key() -> Result<Key, io::Error> {
-    loop {
-        if let Some(key) = io::stdin().lock().keys().next() {
-            return key;
-        }
-    }
 }
