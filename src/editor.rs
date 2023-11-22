@@ -2,6 +2,8 @@ use crate::terminal::Terminal;
 use std::io;
 use termion::event::Key;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub(crate) struct Editor {
     should_quit: bool,
     terminal: Terminal,
@@ -45,10 +47,25 @@ impl Editor {
     }
 
     fn draw_rows(&self) {
-        for _ in 0..self.terminal.size().height {
+        let height = self.terminal.size().height;
+        for row in 0..height - 1 {
             Terminal::clear_current_line();
-            println!("~\r");
+            if row == height / 3 {
+                self.draw_welcome_message();
+            } else {
+                println!("~\r");
+            }
         }
+    }
+
+    fn draw_welcome_message(&self) {
+        let mut msg = format!("Hecto editor -- versoin {VERSION}\r");
+        let width = self.terminal.size().width as usize;
+        let padding = width.saturating_sub(msg.len()) / 2;
+        let spaces = " ".repeat(padding.saturating_sub(1));
+        msg = format!("~{spaces}{msg}");
+        msg.truncate(width);
+        println!("{msg}\r");
     }
 
     fn process_keypress(&mut self) -> Result<(), io::Error> {
