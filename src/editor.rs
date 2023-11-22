@@ -1,6 +1,6 @@
 use crate::terminal::Terminal;
 use std::io;
-use termion::{event::Key, raw::IntoRawMode};
+use termion::event::Key;
 
 pub(crate) struct Editor {
     should_quit: bool,
@@ -17,8 +17,6 @@ impl Editor {
     }
 
     pub fn run(&mut self) {
-        let _stdout = io::stdout().into_raw_mode().unwrap();
-
         loop {
             if let Err(err) = self.refresh_screen() {
                 die(&err);
