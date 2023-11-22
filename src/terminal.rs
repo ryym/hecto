@@ -36,6 +36,10 @@ impl Terminal {
         print!("{}", termion::clear::All);
     }
 
+    pub fn clear_current_line() {
+        print!("{}", termion::clear::CurrentLine);
+    }
+
     pub fn cursor_hide() {
         print!("{}", termion::cursor::Hide);
     }
