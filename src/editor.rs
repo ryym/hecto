@@ -1,4 +1,8 @@
-use crate::{terminal::Terminal, Position};
+use crate::{
+    document::{Document, Row},
+    terminal::Terminal,
+    Position,
+};
 use std::io;
 use termion::event::Key;
 
@@ -8,6 +12,7 @@ pub struct Editor {
     should_quit: bool,
     terminal: Terminal,
     cursor_position: Position,
+    document: Document,
 }
 
 impl Editor {
@@ -17,6 +22,7 @@ impl Editor {
             should_quit: false,
             terminal,
             cursor_position: Position::default(),
+            document: Document::open(),
         }
     }
 
@@ -50,14 +56,22 @@ impl Editor {
 
     fn draw_rows(&self) {
         let height = self.terminal.size().height;
-        for row in 0..height - 1 {
+        for terminal_row in 0..height - 1 {
             Terminal::clear_current_line();
-            if row == height / 3 {
+            if let Some(row) = self.document.row(terminal_row as usize) {
+                self.draw_row(row)
+            } else if self.document.is_empty() && terminal_row == height / 3 {
                 self.draw_welcome_message();
             } else {
                 println!("~\r");
             }
         }
+    }
+
+    fn draw_row(&self, row: &Row) {
+        let end = self.terminal.size().width as usize;
+        let row = row.render(0, end);
+        println!("{row}");
     }
 
     fn draw_welcome_message(&self) {
