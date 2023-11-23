@@ -3,6 +3,7 @@
 mod editor;
 mod terminal;
 
+#[derive(Default)]
 pub struct Position {
     x: usize,
     y: usize,
