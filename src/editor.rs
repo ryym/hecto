@@ -112,13 +112,21 @@ impl Editor {
             .to_string();
         file_name.truncate(20);
 
-        let width = self.terminal.size().width as usize;
         let mut status = format!("{} - {} lines", file_name, self.document.len());
-        if status.len() < width {
-            status.push_str(&" ".repeat(width - status.len()));
-        } else {
-            status.truncate(width);
+
+        let line_indicator = format!(
+            "{}/{}",
+            self.cursor_position.y.saturating_add(1),
+            self.document.len()
+        );
+        let len = status.len() + line_indicator.len();
+
+        let width = self.terminal.size().width as usize;
+        if len < width {
+            status.push_str(&" ".repeat(width - len));
         }
+        status = format!("{status}{line_indicator}");
+        status.truncate(width);
 
         Terminal::set_bg_color(STATUS_BG_COLOR);
         Terminal::set_fg_color(STATUS_FG_COLOR);
