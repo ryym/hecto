@@ -3,7 +3,10 @@ use crate::{
     terminal::Terminal,
     Position,
 };
-use std::{env, io};
+use std::{
+    env, io,
+    time::{Duration, Instant},
+};
 use termion::{color, event::Key};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -16,16 +19,23 @@ pub struct Editor {
     cursor_position: Position,
     offset: Position,
     document: Document,
+    status_message: StatusMessage,
 }
 
 impl Editor {
     pub fn default() -> Self {
         let terminal = Terminal::default().expect("failed to initialize Terminal");
+        let mut initial_status = String::from("HELP: Ctrl-Q = quit");
 
         let args: Vec<String> = env::args().collect();
         let document = if args.len() > 1 {
             let file_name = &args[1];
-            Document::open(file_name).unwrap_or_default()
+            if let Ok(doc) = Document::open(file_name) {
+                doc
+            } else {
+                initial_status = format!("ERR: Could not open file: {file_name}");
+                Document::default()
+            }
         } else {
             Document::default()
         };
@@ -36,6 +46,7 @@ impl Editor {
             cursor_position: Position::default(),
             offset: Position::default(),
             document,
+            status_message: StatusMessage::from(initial_status),
         }
     }
 
@@ -137,6 +148,12 @@ impl Editor {
 
     fn draw_message_bar(&self) {
         Terminal::clear_current_line();
+        let message = &self.status_message;
+        if message.time.elapsed() < Duration::from_secs(5) {
+            let mut text = message.text.clone();
+            text.truncate(self.terminal.size().width as usize);
+            print!("{text}");
+        }
     }
 
     fn process_keypress(&mut self) -> Result<(), io::Error> {
@@ -235,6 +252,20 @@ impl Editor {
             offset.x = pos.x;
         } else if pos.x >= offset.x.saturating_add(width) {
             offset.x = pos.x.saturating_sub(width).saturating_add(1);
+        }
+    }
+}
+
+struct StatusMessage {
+    text: String,
+    time: Instant,
+}
+
+impl StatusMessage {
+    fn from(text: String) -> Self {
+        Self {
+            text,
+            time: Instant::now(),
         }
     }
 }
