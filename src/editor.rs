@@ -126,6 +126,7 @@ impl Editor {
         } else {
             0
         };
+        let terminal_height = self.terminal.size().height as usize;
         match key {
             Key::Up => y = y.saturating_sub(1),
             Key::Down => {
@@ -139,8 +140,14 @@ impl Editor {
                     x = x.saturating_add(1);
                 }
             }
-            Key::PageUp => y = 0,
-            Key::PageDown => y = height,
+            Key::PageUp => y = y.saturating_sub(terminal_height),
+            Key::PageDown => {
+                y = if y.saturating_add(terminal_height) < height {
+                    y + terminal_height
+                } else {
+                    height
+                }
+            }
             Key::Home => x = 0,
             Key::End => x = width,
             _ => {}
