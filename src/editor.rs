@@ -71,7 +71,7 @@ impl Editor {
     fn draw_row(&self, row: &Row) {
         let end = self.terminal.size().width as usize;
         let row = row.render(0, end);
-        println!("{row}");
+        println!("{row}\r");
     }
 
     fn draw_welcome_message(&self) {
