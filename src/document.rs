@@ -1,4 +1,4 @@
-use std::cmp;
+use std::{cmp, fs, io};
 
 #[derive(Default)]
 pub struct Document {
@@ -6,9 +6,13 @@ pub struct Document {
 }
 
 impl Document {
-    pub fn open() -> Self {
-        let rows = vec![Row::from("Hello, World!")];
-        Self { rows }
+    pub fn open(file_name: &str) -> Result<Self, io::Error> {
+        let contents = fs::read_to_string(file_name)?;
+        let mut rows = Vec::new();
+        for line in contents.lines() {
+            rows.push(Row::from(line));
+        }
+        Ok(Self { rows })
     }
 
     pub fn row(&self, index: usize) -> Option<&Row> {
