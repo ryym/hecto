@@ -4,9 +4,11 @@ use crate::{
     Position,
 };
 use std::{env, io};
-use termion::event::Key;
+use termion::{color, event::Key};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const STATUS_FG_COLOR: color::Rgb = color::Rgb(63, 63, 63);
+const STATUS_BG_COLOR: color::Rgb = color::Rgb(239, 239, 239);
 
 pub struct Editor {
     should_quit: bool,
@@ -59,6 +61,8 @@ impl Editor {
             println!("Goodbye.\r");
         } else {
             self.draw_rows();
+            self.draw_status_bar();
+            self.draw_message_bar();
             Terminal::cursor_position(&Position {
                 x: self.cursor_position.x.saturating_sub(self.offset.x),
                 y: self.cursor_position.y.saturating_sub(self.offset.y),
@@ -70,7 +74,7 @@ impl Editor {
 
     fn draw_rows(&self) {
         let height = self.terminal.size().height;
-        for terminal_row in 0..height - 1 {
+        for terminal_row in 0..height {
             Terminal::clear_current_line();
             let row_index = terminal_row as usize + self.offset.y;
             if let Some(row) = self.document.row(row_index) {
@@ -98,6 +102,33 @@ impl Editor {
         msg = format!("~{spaces}{msg}");
         msg.truncate(width);
         println!("{msg}\r");
+    }
+
+    fn draw_status_bar(&self) {
+        let mut file_name = self
+            .document
+            .file_name()
+            .map_or("[No Name]", String::as_str)
+            .to_string();
+        file_name.truncate(20);
+
+        let width = self.terminal.size().width as usize;
+        let mut status = format!("{} - {} lines", file_name, self.document.len());
+        if status.len() < width {
+            status.push_str(&" ".repeat(width - status.len()));
+        } else {
+            status.truncate(width);
+        }
+
+        Terminal::set_bg_color(STATUS_BG_COLOR);
+        Terminal::set_fg_color(STATUS_FG_COLOR);
+        println!("{status}\r");
+        Terminal::reset_fg_color();
+        Terminal::reset_bg_color();
+    }
+
+    fn draw_message_bar(&self) {
+        Terminal::clear_current_line();
     }
 
     fn process_keypress(&mut self) -> Result<(), io::Error> {

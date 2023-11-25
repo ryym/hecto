@@ -4,6 +4,7 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Default)]
 pub struct Document {
     rows: Vec<Row>,
+    file_name: Option<String>,
 }
 
 impl Document {
@@ -13,7 +14,10 @@ impl Document {
         for line in contents.lines() {
             rows.push(Row::from(line));
         }
-        Ok(Self { rows })
+        Ok(Self {
+            rows,
+            file_name: Some(file_name.to_string()),
+        })
     }
 
     pub fn row(&self, index: usize) -> Option<&Row> {
@@ -26,6 +30,10 @@ impl Document {
 
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
+    }
+
+    pub fn file_name(&self) -> Option<&String> {
+        self.file_name.as_ref()
     }
 }
 
