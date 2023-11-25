@@ -19,9 +19,9 @@ pub struct Terminal {
 impl Terminal {
     pub fn default() -> Result<Self, io::Error> {
         let size = termion::terminal_size()?;
-        let _stdout = io::stdout().into_raw_mode()?;
+        let stdout = io::stdout().into_raw_mode()?;
         Ok(Self {
-            _stdout,
+            _stdout: stdout,
             size: Size {
                 width: size.0,
                 height: size.1,
@@ -51,8 +51,8 @@ impl Terminal {
 
     pub fn cursor_position(pos: &Position) {
         // The cursor position in the terminal is 1-based.
-        let x = pos.x.saturating_add(1) as u16;
-        let y = pos.y.saturating_add(1) as u16;
+        let x = u16::try_from(pos.x.saturating_add(1)).unwrap_or(u16::MAX);
+        let y = u16::try_from(pos.y.saturating_add(1)).unwrap_or(u16::MAX);
         print!("{}", termion::cursor::Goto(x, y));
     }
 

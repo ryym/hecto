@@ -74,7 +74,7 @@ impl Editor {
             Terminal::clear_current_line();
             let row_index = terminal_row as usize + self.offset.y;
             if let Some(row) = self.document.row(row_index) {
-                self.draw_row(row)
+                self.draw_row(row);
             } else if self.document.is_empty() && terminal_row == height / 3 {
                 self.draw_welcome_message();
             } else {

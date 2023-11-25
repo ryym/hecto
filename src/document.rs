@@ -42,10 +42,6 @@ impl Row {
     pub fn len(&self) -> usize {
         self.string.len()
     }
-
-    pub fn is_empty(&self) -> bool {
-        self.string.is_empty()
-    }
 }
 
 impl From<&str> for Row {
