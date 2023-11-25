@@ -134,10 +134,24 @@ impl Editor {
                     y = y.saturating_add(1);
                 }
             }
-            Key::Left => x = x.saturating_sub(1),
+            Key::Left => {
+                if x > 0 {
+                    x -= 1;
+                } else if y > 0 {
+                    y -= 1;
+                    x = if let Some(row) = self.document.row(y) {
+                        row.len()
+                    } else {
+                        0
+                    };
+                }
+            }
             Key::Right => {
                 if x < width {
-                    x = x.saturating_add(1);
+                    x += 1;
+                } else if y < height {
+                    y += 1;
+                    x = 0;
                 }
             }
             Key::PageUp => y = y.saturating_sub(terminal_height),
