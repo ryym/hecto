@@ -106,15 +106,6 @@ pub struct Row {
 }
 
 impl Row {
-    fn replace_string(&mut self, string: String) {
-        self.string = string;
-        self.update_len();
-    }
-
-    fn update_len(&mut self) {
-        self.len = self.string.graphemes(true).count();
-    }
-
     pub fn render(&self, start: usize, end: usize) -> String {
         let end = cmp::min(end, self.string.len());
         let start = cmp::min(start, end);
@@ -132,34 +123,52 @@ impl Row {
     pub fn insert(&mut self, at: usize, c: char) {
         if at >= self.len() {
             self.string.push(c);
-            self.update_len();
-        } else {
-            let mut result: String = self.string.graphemes(true).take(at).collect();
-            let reminder: String = self.string.graphemes(true).skip(at).collect();
-            result.push(c);
-            result.push_str(&reminder);
-            self.replace_string(result);
+            self.len += 1;
+            return;
         }
+        let mut result = String::new();
+        for (i, grapheme) in self.string.graphemes(true).enumerate() {
+            if i == at {
+                result.push(c);
+            }
+            result.push_str(grapheme);
+        }
+        self.len += 1;
+        self.string = result;
     }
 
     pub fn delete(&mut self, at: usize) {
-        if at < self.len() {
-            let mut result: String = self.string.graphemes(true).take(at).collect();
-            let reminder: String = self.string.graphemes(true).skip(at + 1).collect();
-            result.push_str(&reminder);
-            self.replace_string(result);
+        if at > self.len() {
+            return;
         }
+        let mut result = String::new();
+        for (i, grapheme) in self.string.graphemes(true).enumerate() {
+            if i != at {
+                result.push_str(grapheme);
+            }
+        }
+        self.len -= 1;
+        self.string = result;
     }
 
     pub fn append(&mut self, new: &Self) {
-        self.replace_string(format!("{}{}", self.string, new.string));
+        self.string = format!("{}{}", self.string, new.string);
+        self.len += new.len;
     }
 
     pub fn cut(&mut self, at: usize) -> Self {
-        let beginning: String = self.string.graphemes(true).take(at).collect();
-        let reminder: String = self.string.graphemes(true).skip(at).collect();
-        self.replace_string(beginning);
-        Self::from(reminder.as_str())
+        let mut row = String::new();
+        let mut splitted = String::new();
+        for (i, grapheme) in self.string.graphemes(true).enumerate() {
+            if i < at {
+                row.push_str(grapheme);
+            } else {
+                splitted.push_str(grapheme);
+            }
+        }
+        self.len = at;
+        self.string = row;
+        Self::from(splitted.as_str())
     }
 
     pub fn as_bytes(&self) -> &[u8] {
