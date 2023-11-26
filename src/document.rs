@@ -9,7 +9,7 @@ use crate::Position;
 #[derive(Default)]
 pub struct Document {
     rows: Vec<Row>,
-    file_name: Option<String>,
+    pub file_name: Option<String>,
 }
 
 impl Document {
@@ -35,10 +35,6 @@ impl Document {
 
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
-    }
-
-    pub fn file_name(&self) -> Option<&String> {
-        self.file_name.as_ref()
     }
 
     pub fn insert(&mut self, at: &Position, c: char) {

@@ -118,9 +118,9 @@ impl Editor {
     fn draw_status_bar(&self) {
         let mut file_name = self
             .document
-            .file_name()
-            .map_or("[No Name]", String::as_str)
-            .to_string();
+            .file_name
+            .clone()
+            .unwrap_or_else(|| "[No Name]".to_string());
         file_name.truncate(20);
 
         let mut status = format!("{} - {} lines", file_name, self.document.len());
