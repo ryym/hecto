@@ -161,6 +161,9 @@ impl Editor {
         match pressed_key {
             Key::Ctrl('q') => self.should_quit = true,
             Key::Ctrl('s') => {
+                if self.document.file_name.is_none() {
+                    self.document.file_name = Some(self.prompt("Save as: ")?);
+                }
                 self.status_message = if self.document.save().is_ok() {
                     StatusMessage::from("File saved successfully.".to_string())
                 } else {
@@ -271,6 +274,24 @@ impl Editor {
         } else if pos.x >= offset.x.saturating_add(width) {
             offset.x = pos.x.saturating_sub(width).saturating_add(1);
         }
+    }
+
+    fn prompt(&mut self, prompt: &str) -> Result<String, io::Error> {
+        let mut result = String::new();
+        loop {
+            self.status_message = StatusMessage::from(format!("{prompt}{result}"));
+            self.refresh_screen()?;
+            if let Key::Char(c) = Terminal::read_key()? {
+                if c == '\n' {
+                    self.status_message = StatusMessage::from(String::new());
+                    break;
+                }
+                if !c.is_control() {
+                    result.push(c);
+                }
+            }
+        }
+        Ok(result)
     }
 }
 
