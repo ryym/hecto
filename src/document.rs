@@ -1,4 +1,7 @@
-use std::{cmp, fs, io};
+use std::{
+    cmp, fs,
+    io::{self, Write},
+};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::Position;
@@ -77,6 +80,17 @@ impl Document {
             row.delete(at.x);
         }
     }
+
+    pub fn save(&self) -> Result<(), io::Error> {
+        if let Some(file_name) = &self.file_name {
+            let mut file = fs::File::create(file_name)?;
+            for row in &self.rows {
+                file.write_all(row.as_bytes())?;
+                file.write_all(b"\n")?;
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Default)]
@@ -141,6 +155,10 @@ impl Row {
         let reminder: String = self.string.graphemes(true).skip(at).collect();
         self.replace_string(beginning);
         Self::from(reminder.as_str())
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.string.as_bytes()
     }
 }
 
