@@ -47,6 +47,12 @@ impl Document {
             row.insert(at.x, c);
         }
     }
+
+    pub fn delete(&mut self, at: &Position) {
+        if let Some(row) = self.rows.get_mut(at.y) {
+            row.delete(at.x);
+        }
+    }
 }
 
 #[derive(Default)]
@@ -83,6 +89,15 @@ impl Row {
             let mut result: String = self.string.graphemes(true).take(at).collect();
             let reminder: String = self.string.graphemes(true).skip(at).collect();
             result.push(c);
+            result.push_str(&reminder);
+            self.update_string(result);
+        }
+    }
+
+    pub fn delete(&mut self, at: usize) {
+        if at < self.len() {
+            let mut result: String = self.string.graphemes(true).take(at).collect();
+            let reminder: String = self.string.graphemes(true).skip(at + 1).collect();
             result.push_str(&reminder);
             self.update_string(result);
         }
