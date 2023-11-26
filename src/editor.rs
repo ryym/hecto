@@ -123,7 +123,13 @@ impl Editor {
             .unwrap_or_else(|| "[No Name]".to_string());
         file_name.truncate(20);
 
-        let mut status = format!("{} - {} lines", file_name, self.document.len());
+        let modified = if self.document.is_dirty() {
+            " (modified)"
+        } else {
+            ""
+        };
+
+        let mut status = format!("{} - {} lines{}", file_name, self.document.len(), modified);
 
         let line_indicator = format!(
             "{}/{}",
