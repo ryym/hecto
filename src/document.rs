@@ -39,6 +39,10 @@ impl Document {
     }
 
     pub fn insert(&mut self, at: &Position, c: char) {
+        if c == '\n' {
+            self.insert_newline(at);
+            return;
+        }
         if at.y == self.len() {
             let mut row = Row::default();
             row.insert(0, c);
@@ -46,6 +50,18 @@ impl Document {
         } else if let Some(row) = self.rows.get_mut(at.y) {
             row.insert(at.x, c);
         }
+    }
+
+    fn insert_newline(&mut self, at: &Position) {
+        if at.y > self.len() {
+            return;
+        }
+        if at.y == self.len() {
+            self.rows.push(Row::default());
+            return;
+        }
+        let new_row = self.rows.get_mut(at.y).unwrap().cut(at.x);
+        self.rows.insert(at.y + 1, new_row);
     }
 
     pub fn delete(&mut self, at: &Position) {
@@ -113,6 +129,13 @@ impl Row {
 
     pub fn append(&mut self, new: &Self) {
         self.update_string(format!("{}{}", self.string, new.string));
+    }
+
+    pub fn cut(&mut self, at: usize) -> Self {
+        let beginning: String = self.string.graphemes(true).take(at).collect();
+        let reminder: String = self.string.graphemes(true).skip(at).collect();
+        self.update_string(beginning);
+        Self::from(reminder.as_str())
     }
 }
 
