@@ -162,7 +162,7 @@ impl Editor {
             Key::Ctrl('q') => self.should_quit = true,
             Key::Ctrl('s') => {
                 self.status_message = if self.document.save().is_ok() {
-                    StatusMessage::from("_file saved successfully.".to_string())
+                    StatusMessage::from("File saved successfully.".to_string())
                 } else {
                     StatusMessage::from("Error writing file!".to_string())
                 };
