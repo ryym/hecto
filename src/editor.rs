@@ -1,8 +1,4 @@
-use crate::{
-    document::{Document, Row},
-    terminal::Terminal,
-    Position,
-};
+use crate::{document::Document, row::Row, terminal::Terminal, Position};
 use std::{
     env, io,
     time::{Duration, Instant},

@@ -2,6 +2,7 @@
 
 mod document;
 mod editor;
+mod row;
 mod terminal;
 
 #[derive(Default)]
