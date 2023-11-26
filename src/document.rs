@@ -1,6 +1,8 @@
 use std::{cmp, fs, io};
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::Position;
+
 #[derive(Default)]
 pub struct Document {
     rows: Vec<Row>,
@@ -35,8 +37,19 @@ impl Document {
     pub fn file_name(&self) -> Option<&String> {
         self.file_name.as_ref()
     }
+
+    pub fn insert(&mut self, at: &Position, c: char) {
+        if at.y == self.len() {
+            let mut row = Row::default();
+            row.insert(0, c);
+            self.rows.push(row);
+        } else if let Some(row) = self.rows.get_mut(at.y) {
+            row.insert(at.x, c);
+        }
+    }
 }
 
+#[derive(Default)]
 pub struct Row {
     string: String,
     /// The length of the string in graphemes.
@@ -44,6 +57,11 @@ pub struct Row {
 }
 
 impl Row {
+    fn update_string(&mut self, string: String) {
+        self.len = string.graphemes(true).count();
+        self.string = string;
+    }
+
     pub fn render(&self, start: usize, end: usize) -> String {
         let end = cmp::min(end, self.string.len());
         let start = cmp::min(start, end);
@@ -56,6 +74,18 @@ impl Row {
 
     pub fn len(&self) -> usize {
         self.len
+    }
+
+    pub fn insert(&mut self, at: usize, c: char) {
+        if at >= self.len() {
+            self.string.push(c);
+        } else {
+            let mut result: String = self.string.graphemes(true).take(at).collect();
+            let reminder: String = self.string.graphemes(true).skip(at).collect();
+            result.push(c);
+            result.push_str(&reminder);
+            self.update_string(result);
+        }
     }
 }
 
