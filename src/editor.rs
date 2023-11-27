@@ -177,7 +177,7 @@ impl Editor {
                 self.should_quit = true;
             }
             Key::Ctrl('s') => self.save(),
-            Key::Ctrl('f') => self.find(),
+            Key::Ctrl('f') => self.search(),
             Key::Char(c) => {
                 self.document.insert(&self.cursor_position, c);
                 self.move_cursor(Key::Right);
@@ -304,7 +304,7 @@ impl Editor {
         };
     }
 
-    fn find(&mut self) {
+    fn search(&mut self) {
         let prompt_result = self.prompt("Search: ", |editor, _, query| {
             if let Some(position) = editor.document.find(query) {
                 editor.cursor_position = position;
