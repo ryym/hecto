@@ -306,8 +306,9 @@ impl Editor {
 
     fn search(&mut self) {
         let mut direction = SearchDirection::Forward;
+        let mut last_match_query: Option<String> = None;
         let old_position = self.cursor_position.clone();
-        let prompt_result = self.prompt(
+        let query = self.prompt(
             "Search (ESC to cancel, Arrows to navigate): ",
             |editor, key, query| {
                 let mut moved = false;
@@ -325,6 +326,7 @@ impl Editor {
                     .document
                     .find(query, &editor.cursor_position, direction);
                 if let Some(position) = position {
+                    last_match_query = Some(query.clone());
                     editor.cursor_position = position;
                     editor.scroll();
                 } else if moved {
@@ -332,10 +334,15 @@ impl Editor {
                 }
             },
         );
-        if prompt_result.unwrap_or(None).is_none() {
-            self.cursor_position = old_position;
-            self.scroll();
+        if let (Ok(Some(query)), Some(last_match_query)) = (query, last_match_query) {
+            if query == last_match_query {
+                return;
+            } else {
+                self.status_message = StatusMessage::from(format!("Not found: {query}"));
+            }
         }
+        self.cursor_position = old_position;
+        self.scroll();
     }
 
     fn prompt<C>(&mut self, prompt: &str, mut callback: C) -> Result<Option<String>, io::Error>
