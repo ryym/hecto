@@ -74,9 +74,9 @@ impl Row {
         Self::from(splitted.as_str())
     }
 
-    pub fn find(&self, query: &str) -> Option<usize> {
+    pub fn find(&self, query: &str, after: usize) -> Option<usize> {
         if let Some(matching_byte_index) = self.string.find(query) {
-            let grapheme_indices = self.string.grapheme_indices(true).enumerate();
+            let grapheme_indices = self.string.grapheme_indices(true).enumerate().skip(after);
             for (grapheme_index, (byte_index, _)) in grapheme_indices {
                 if matching_byte_index == byte_index {
                     return Some(grapheme_index);
