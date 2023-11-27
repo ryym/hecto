@@ -290,7 +290,7 @@ impl Editor {
 
     fn save(&mut self) {
         if self.document.file_name.is_none() {
-            let file_name = self.prompt("Save as: ").unwrap_or(None);
+            let file_name = self.prompt("Save as: ", |_, _, _| {}).unwrap_or(None);
             if file_name.is_none() {
                 self.status_message = StatusMessage::from("Save aborted.".to_string());
                 return;
@@ -305,7 +305,13 @@ impl Editor {
     }
 
     fn find(&mut self) {
-        if let Some(query) = self.prompt("Search: ").unwrap_or(None) {
+        let prompt_result = self.prompt("Search: ", |editor, _, query| {
+            if let Some(position) = editor.document.find(query) {
+                editor.cursor_position = position;
+                editor.scroll();
+            }
+        });
+        if let Ok(Some(query)) = prompt_result {
             if let Some(position) = self.document.find(&query) {
                 self.cursor_position = position;
             } else {
@@ -314,12 +320,16 @@ impl Editor {
         }
     }
 
-    fn prompt(&mut self, prompt: &str) -> Result<Option<String>, io::Error> {
+    fn prompt<C>(&mut self, prompt: &str, callback: C) -> Result<Option<String>, io::Error>
+    where
+        C: Fn(&mut Self, Key, &String),
+    {
         let mut result = String::new();
         loop {
             self.status_message = StatusMessage::from(format!("{prompt}{result}"));
             self.refresh_screen()?;
-            match Terminal::read_key()? {
+            let key = Terminal::read_key()?;
+            match key {
                 Key::Esc => {
                     result.truncate(0);
                     break;
@@ -337,6 +347,7 @@ impl Editor {
                 }
                 _ => {}
             }
+            callback(self, key, &result);
         }
         self.status_message = StatusMessage::from(String::new());
         if result.is_empty() {
