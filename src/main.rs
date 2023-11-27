@@ -11,6 +11,12 @@ pub struct Position {
     y: usize,
 }
 
+#[derive(PartialEq, Copy, Clone)]
+pub enum SearchDirection {
+    Forward,
+    Backward,
+}
+
 use crate::editor::Editor;
 
 fn main() {

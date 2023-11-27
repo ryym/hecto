@@ -1,4 +1,4 @@
-use crate::{row::Row, Position};
+use crate::{row::Row, Position, SearchDirection};
 use std::{
     fs,
     io::{self, Write},
@@ -95,13 +95,37 @@ impl Document {
         self.dirty
     }
 
-    pub fn find(&self, query: &str, after: &Position) -> Option<Position> {
-        let mut after_x = after.x;
-        for (y, row) in self.rows.iter().enumerate().skip(after.y) {
-            if let Some(x) = row.find(query, after_x) {
-                return Some(Position { x, y });
+    pub fn find(&self, query: &str, at: &Position, direction: SearchDirection) -> Option<Position> {
+        if at.y >= self.rows.len() {
+            return None;
+        }
+        match direction {
+            SearchDirection::Forward => {
+                let mut x_start = at.x;
+                let rows_to_end = self.rows.iter().enumerate().skip(at.y);
+                for (y, row) in rows_to_end {
+                    if let Some(x) = row.find(query, x_start, direction) {
+                        return Some(Position { x, y });
+                    }
+                    x_start = 0;
+                }
             }
-            after_x = 0;
+            SearchDirection::Backward => {
+                let mut x_start = at.x;
+                let rows_to_start = self
+                    .rows
+                    .iter()
+                    .enumerate()
+                    .take(at.y.saturating_add(1))
+                    .rev();
+                for (y, row) in rows_to_start {
+                    if let Some(x) = row.find(query, x_start, direction) {
+                        return Some(Position { x, y });
+                    }
+                    let prev_row = self.rows.get(y.saturating_sub(1));
+                    x_start = prev_row.map_or(0, Row::len);
+                }
+            }
         }
         None
     }

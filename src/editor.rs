@@ -1,4 +1,4 @@
-use crate::{document::Document, row::Row, terminal::Terminal, Position};
+use crate::{document::Document, row::Row, terminal::Terminal, Position, SearchDirection};
 use std::{
     env, io,
     time::{Duration, Instant},
@@ -305,6 +305,7 @@ impl Editor {
     }
 
     fn search(&mut self) {
+        let mut direction = SearchDirection::Forward;
         let old_position = self.cursor_position.clone();
         let prompt_result = self.prompt(
             "Search (ESC to cancel, Arrows to navigate): ",
@@ -312,13 +313,18 @@ impl Editor {
                 let mut moved = false;
                 match key {
                     Key::Right | Key::Down => {
+                        direction = SearchDirection::Forward;
                         // Proceed the position to search the next match.
                         editor.move_cursor(Key::Right);
                         moved = true;
                     }
-                    _ => {}
+                    Key::Left | Key::Up => direction = SearchDirection::Backward,
+                    _ => direction = SearchDirection::Forward,
                 }
-                if let Some(position) = editor.document.find(query, &editor.cursor_position) {
+                let position = editor
+                    .document
+                    .find(query, &editor.cursor_position, direction);
+                if let Some(position) = position {
                     editor.cursor_position = position;
                     editor.scroll();
                 } else if moved {
@@ -326,21 +332,15 @@ impl Editor {
                 }
             },
         );
-        if let Ok(Some(query)) = prompt_result {
-            if let Some(position) = self.document.find(&query, &old_position) {
-                self.cursor_position = position;
-            } else {
-                self.status_message = StatusMessage::from(format!("Not found: {query}"));
-            }
-        } else {
+        if prompt_result.unwrap_or(None).is_none() {
             self.cursor_position = old_position;
             self.scroll();
         }
     }
 
-    fn prompt<C>(&mut self, prompt: &str, callback: C) -> Result<Option<String>, io::Error>
+    fn prompt<C>(&mut self, prompt: &str, mut callback: C) -> Result<Option<String>, io::Error>
     where
-        C: Fn(&mut Self, Key, &String),
+        C: FnMut(&mut Self, Key, &String),
     {
         let mut result = String::new();
         loop {
