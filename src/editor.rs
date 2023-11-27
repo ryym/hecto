@@ -305,6 +305,7 @@ impl Editor {
     }
 
     fn search(&mut self) {
+        let old_position = self.cursor_position.clone();
         let prompt_result = self.prompt("Search: ", |editor, _, query| {
             if let Some(position) = editor.document.find(query) {
                 editor.cursor_position = position;
@@ -317,6 +318,9 @@ impl Editor {
             } else {
                 self.status_message = StatusMessage::from(format!("Not found: {query}"));
             }
+        } else {
+            self.cursor_position = old_position;
+            self.scroll();
         }
     }
 

@@ -5,7 +5,7 @@ mod editor;
 mod row;
 mod terminal;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Position {
     x: usize,
     y: usize,
